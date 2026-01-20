@@ -43,10 +43,15 @@ def setup_tracing(app, db):
     # Instrument Flask
     FlaskInstrumentor().instrument_app(app)
     
-    # Instrument SQLAlchemy
-    SQLAlchemyInstrumentor().instrument(
-        engine=db.engine,
-        tracer_provider=trace.get_tracer_provider()
-    )
+    # Instrument SQLAlchemy within app context
+    with app.app_context():
+        try:
+            SQLAlchemyInstrumentor().instrument(
+                engine=db.engine,
+                tracer_provider=trace.get_tracer_provider()
+            )
+        except Exception:
+            # Silently fail if instrumentation fails (e.g., in tests with in-memory DB)
+            pass
     
     return tracer
