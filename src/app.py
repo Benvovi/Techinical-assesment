@@ -6,6 +6,7 @@ from .middleware.logging import setup_logging
 from .middleware.metrics import setup_metrics
 from .middleware.tracing import setup_tracing
 import os
+from sqlalchemy import text
 
 
 def create_app(env_name: str) -> Flask:
@@ -56,8 +57,8 @@ def create_app(env_name: str) -> Flask:
             Health status with database connectivity check
         """
         try:
-            # Check database connectivity
-            db.session.execute('SELECT 1')
+            # Check database connectivity - use text() for Flask-SQLAlchemy 3.x
+            db.session.execute(text('SELECT 1'))
             return {'status': 'healthy', 'database': 'connected'}, 200
         except Exception as e:
             return {'status': 'unhealthy', 'database': 'disconnected', 'error': str(e)}, 503
