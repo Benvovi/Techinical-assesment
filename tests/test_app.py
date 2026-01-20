@@ -9,15 +9,22 @@ from src.models import db
 @pytest.fixture
 def app():
     """Create application for testing"""
+    # Set environment variable before creating app
+    import os
+    os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+    os.environ['JWT_SECRET_KEY'] = 'test-secret-key'
+    
     app = create_app('development')
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['JWT_SECRET_KEY'] = 'test-secret-key'
     
     with app.app_context():
         db.create_all()
         yield app
         db.drop_all()
+        # Clean up environment
+        os.environ.pop('DATABASE_URL', None)
+        os.environ.pop('JWT_SECRET_KEY', None)
 
 
 @pytest.fixture
