@@ -5,6 +5,7 @@ from .views.people import people_api as people
 from .middleware.logging import setup_logging
 from .middleware.metrics import setup_metrics
 from .middleware.tracing import setup_tracing
+import os
 
 
 def create_app(env_name: str) -> Flask:
@@ -19,6 +20,12 @@ def create_app(env_name: str) -> Flask:
     """
     app = Flask(__name__)
     app.config.from_object(app_config[env_name])
+    
+    # Ensure database URI is set (for testing or if env var wasn't set at import time)
+    # This is a safety check that only runs if the URI is missing
+    if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    
     db.init_app(app)
 
     # Setup observability middleware
