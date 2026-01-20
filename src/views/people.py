@@ -67,9 +67,6 @@ def get_by_id(person_uuid: str) -> Response:
     Returns:
         Response containing the selected person
     """
-    # #region agent log
-    import json as _json; open('/Users/benjamindurojaiye/Desktop/projects/titanic-api-main/.cursor/debug.log','a').write(_json.dumps({"hypothesisId":"B,C","location":"people.py:get_by_id","message":"view received person_uuid","data":{"person_uuid":person_uuid,"uuid_type":str(type(person_uuid))},"timestamp":__import__('time').time()})+'\n')
-    # #endregion
     people = Person.get_by_id(person_uuid)
     if isinstance(people, type(None)):
         return custom_response("Person not found",404)

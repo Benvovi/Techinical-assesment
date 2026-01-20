@@ -77,9 +77,6 @@ class Person(db.Model):
         Returns:
             The person matching the UUID as a Person instance
         """
-        # #region agent log
-        import json as _json; open('/Users/benjamindurojaiye/Desktop/projects/titanic-api-main/.cursor/debug.log','a').write(_json.dumps({"hypothesisId":"A,B","location":"person.py:get_by_id","message":"get_by_id called","data":{"person_uuid":str(person_uuid),"uuid_type":str(type(person_uuid)),"uuid_column_type":str(Person.uuid.type)},"timestamp":__import__('time').time()})+'\n')
-        # #endregion
         # Convert string UUID to UUID object if needed, use modern session.get() API
         try:
             if isinstance(person_uuid, str):
