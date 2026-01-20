@@ -74,11 +74,19 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Run Bandit security linter
-        uses: securecodewarrior/github-action-bandit@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          path: src
-          exit_zero: true
+          python-version: '3.11'
+      
+      - name: Install Bandit
+        run: |
+          pip install bandit
+      
+      - name: Run Bandit security linter
+        run: |
+          bandit -r src/ -f json -o bandit-report.json || true
+          bandit -r src/ -ll || true
       
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
