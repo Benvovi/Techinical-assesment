@@ -1,0 +1,41 @@
+# Enhanced Network Policies for Security
+# This extends the base network policies with additional security controls
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: titanic-api-egress-restrictions
+  namespace: titanic-api
+spec:
+  podSelector:
+    matchLabels:
+      app: titanic-api
+  policyTypes:
+  - Egress
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow HTTPS to AWS services
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    # Restrict to AWS IP ranges (would need to be configured)
+  # Deny all other egress by default (implicit)
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-default
+  namespace: titanic-api
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress

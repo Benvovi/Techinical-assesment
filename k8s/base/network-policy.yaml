@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: titanic-api-network-policy
+  namespace: titanic-api
+spec:
+  podSelector:
+    matchLabels:
+      app: titanic-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 5000
+  - from:
+    - podSelector:
+        matchLabels:
+          app: titanic-api
+    ports:
+    - protocol: TCP
+      port: 5000
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: titanic-db
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090  # Prometheus
+  - to: []  # Allow DNS
+    ports:
+    - protocol: UDP
+      port: 53
+  - to: []  # Allow HTTPS for external APIs
+    ports:
+    - protocol: TCP
+      port: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: titanic-db-network-policy
+  namespace: titanic-api
+spec:
+  podSelector:
+    matchLabels:
+      app: titanic-db
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: titanic-api
+    ports:
+    - protocol: TCP
+      port: 5432
+  egress:
+  - to: []  # Allow DNS
+    ports:
+    - protocol: UDP
+      port: 53

@@ -1,0 +1,76 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.pytest_cache
+.coverage
+htmlcov
+.venv
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation (keep README)
+docs/
+*.md
+!README.md
+
+# Data files
+*.csv
+titanic.sql
+
+# CI/CD
+.github/
+
+# Terraform
+terraform/
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Kubernetes
+k8s/
+
+# Monitoring
+monitoring/
+
+# Security
+security/
+
+# Backup
+backup/
+
+# Docker
+Dockerfile.dev
+docker-compose*.yml
+.dockerignore
+
+# Tests
+tests/
+pytest.ini
+
+# Other
+.DS_Store
+*.log
+.env
+.env.local

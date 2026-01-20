@@ -1,0 +1,34 @@
+# Development Dockerfile with hot-reload
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    postgresql-client \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies including dev tools
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir flask-debugtoolbar watchdog
+
+# Copy application code
+COPY src/ ./src/
+COPY run.py .
+
+# Set environment variables for development
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
+
+# Expose port
+EXPOSE 5000
+
+# Run with hot-reload using watchdog or Flask's reloader
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]

@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: titanic-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql+psycopg2://titanic_user:titanic_password@db:5432/titanic_db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - titanic-network
+    volumes:
+      - app-data:/app/data
+
+  db:
+    image: postgres:15-alpine
+    container_name: titanic-db
+    environment:
+      - POSTGRES_USER=titanic_user
+      - POSTGRES_PASSWORD=titanic_password
+      - POSTGRES_DB=titanic_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./titanic.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U titanic_user -d titanic_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - titanic-network
+
+volumes:
+  postgres-data:
+    driver: local
+  app-data:
+    driver: local
+
+networks:
+  titanic-network:
+    driver: bridge

@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: titanic-dev
+
+resources:
+  - ../../base
+
+namePrefix: titanic-dev-
+
+commonLabels:
+  environment: development
+
+images:
+  - name: ghcr.io/REPO_OWNER/titanic-api
+    newTag: develop
+
+patches:
+  - target:
+      kind: Deployment
+      name: titanic-api
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "50m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "64Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "250m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "256Mi"
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: titanic-api-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 3
+  - target:
+      kind: ConfigMap
+      name: titanic-api-config
+    patch: |-
+      - op: replace
+        path: /data/FLASK_ENV
+        value: "development"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "DEBUG"
+
+configMapGenerator:
+  - name: titanic-api-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=development

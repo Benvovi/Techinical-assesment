@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: database-backup
+  namespace: titanic-api
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: backup-sa
+          containers:
+          - name: backup
+            image: postgres:15-alpine
+            command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache aws-cli
+              /scripts/backup-database.sh
+            env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: titanic-api-secrets
+                  key: DATABASE_HOST
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: titanic-api-secrets
+                  key: DATABASE_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: titanic-api-secrets
+                  key: DATABASE_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: titanic-api-secrets
+                  key: DATABASE_PASSWORD
+            - name: S3_BUCKET
+              value: "titanic-api-backups"
+            - name: AWS_REGION
+              value: "us-east-1"
+            - name: BACKUP_RETENTION_DAYS
+              value: "30"
+            volumeMounts:
+            - name: backup-scripts
+              mountPath: /scripts
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "128Mi"
+              limits:
+                cpu: "500m"
+                memory: "512Mi"
+          volumes:
+          - name: backup-scripts
+            configMap:
+              name: backup-scripts
+          restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-scripts
+  namespace: titanic-api
+data:
+  backup-database.sh: |
+    # Backup script content will be mounted here
+    # See backup/scripts/backup-database.sh
