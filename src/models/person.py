@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from marshmallow import fields, Schema
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid  # Use database-agnostic UUID type (works with SQLite and PostgreSQL)
 from . import db
 import uuid
 
@@ -11,7 +11,7 @@ class Person(db.Model):
     """
     __tablename__ = 'people'
 
-    uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    uuid = db.Column(Uuid, primary_key=True, default=uuid.uuid4)
     survived = db.Column(db.Integer)
     passengerClass = db.Column(db.Integer)
     name = db.Column(db.String(255))
@@ -77,7 +77,16 @@ class Person(db.Model):
         Returns:
             The person matching the UUID as a Person instance
         """
-        return Person.query.get(person_uuid)
+        # #region agent log
+        import json as _json; open('/Users/benjamindurojaiye/Desktop/projects/titanic-api-main/.cursor/debug.log','a').write(_json.dumps({"hypothesisId":"A,B","location":"person.py:get_by_id","message":"get_by_id called","data":{"person_uuid":str(person_uuid),"uuid_type":str(type(person_uuid)),"uuid_column_type":str(Person.uuid.type)},"timestamp":__import__('time').time()})+'\n')
+        # #endregion
+        # Convert string UUID to UUID object if needed, use modern session.get() API
+        try:
+            if isinstance(person_uuid, str):
+                person_uuid = uuid.UUID(person_uuid)
+        except (ValueError, AttributeError):
+            return None
+        return db.session.get(Person, person_uuid)
 
     def __str__(self) -> str:
         """

@@ -19,6 +19,9 @@ def app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     
     with app.app_context():
+        # #region agent log
+        import json as _json; open('/Users/benjamindurojaiye/Desktop/projects/titanic-api-main/.cursor/debug.log','a').write(_json.dumps({"hypothesisId":"A,C","location":"test_app.py:app_fixture","message":"db config info","data":{"db_uri":app.config.get('SQLALCHEMY_DATABASE_URI'),"dialect":str(db.engine.dialect.name)},"timestamp":__import__('time').time()})+'\n')
+        # #endregion
         db.create_all()
         yield app
         db.drop_all()
@@ -79,5 +82,11 @@ def test_get_person_by_id_not_found(client):
     """Test getting a person that doesn't exist"""
     import uuid
     fake_uuid = str(uuid.uuid4())
+    # #region agent log
+    import json as _json; open('/Users/benjamindurojaiye/Desktop/projects/titanic-api-main/.cursor/debug.log','a').write(_json.dumps({"hypothesisId":"A,B,C","location":"test_app.py:test_get_person_by_id_not_found","message":"test calling with fake_uuid","data":{"fake_uuid":fake_uuid,"uuid_type":str(type(fake_uuid))},"timestamp":__import__('time').time()})+'\n')
+    # #endregion
     response = client.get(f'/people/{fake_uuid}')
+    # #region agent log
+    import json as _json; open('/Users/benjamindurojaiye/Desktop/projects/titanic-api-main/.cursor/debug.log','a').write(_json.dumps({"hypothesisId":"A,B,C","location":"test_app.py:after_request","message":"response received","data":{"status_code":response.status_code,"response_data":response.get_data(as_text=True)[:200]},"timestamp":__import__('time').time()})+'\n')
+    # #endregion
     assert response.status_code == 404
